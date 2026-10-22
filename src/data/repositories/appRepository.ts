@@ -95,6 +95,24 @@ export class AppRepository {
       }
     }
 
+    // Remove retired demo listening questions from browsers seeded before this update.
+    // Imported listening packs remain available for future content updates.
+    await db.transaction('rw', [db.questions, db.questionGroups, db.reviewItems, db.studyPacks], async () => {
+      const retired = await db.questions.where('packId').equals(STARTER_STUDY_PACK.id)
+        .filter((q) => q.part <= 4).toArray();
+      await db.questions.bulkDelete(retired.map((q) => q.id));
+      await db.reviewItems.bulkDelete(retired.map((q) => q.id));
+      await db.questionGroups.where('packId').equals(STARTER_STUDY_PACK.id)
+        .filter((g) => g.part <= 4).delete();
+      const remaining = await db.questions.where('packId').equals(STARTER_STUDY_PACK.id).toArray();
+      await db.studyPacks.update(STARTER_STUDY_PACK.id, {
+        title: STARTER_STUDY_PACK.title,
+        description: STARTER_STUDY_PACK.description,
+        partsIncluded: [...new Set(remaining.map((q) => q.part))],
+        questionCount: remaining.length,
+      });
+    });
+
     // Ensure daily missions are populated for today
     await this.ensureDailyMissions();
   }

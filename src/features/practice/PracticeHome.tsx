@@ -16,10 +16,14 @@ interface PracticeHomeProps {
 
 export const PracticeHome: React.FC<PracticeHomeProps> = ({ onStartSession, onPlayCatMail }) => {
   const [packs, setPacks] = useState<StudyPack[]>([]);
+  const [availableParts, setAvailableParts] = useState<TOEICPart[]>([]);
   const [mode, setMode] = useState<'practice' | 'test'>('test');
 
   useEffect(() => {
     repository.getAllStudyPacks().then(setPacks);
+    repository.getAllQuestions().then((questions) => {
+      setAvailableParts([...new Set(questions.map((q) => q.part))]);
+    });
   }, []);
 
   const partCards: { part: TOEICPart; name: string; desc: string; icon: string; tag: string }[] = [
@@ -296,7 +300,7 @@ export const PracticeHome: React.FC<PracticeHomeProps> = ({ onStartSession, onPl
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {partCards.map((c) => (
+          {partCards.filter((c) => availableParts.includes(c.part)).map((c) => (
             <div
               key={c.part}
               onClick={() => handleStartPart(c.part, c.name)}

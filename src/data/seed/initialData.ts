@@ -134,13 +134,13 @@ export const INITIAL_MESSAGES: PersonalMessage[] = [
 
 export const STARTER_STUDY_PACK: StudyPack = {
   id: 'pack-starter-all-parts',
-  title: 'Bộ Đề Khởi Động Chuẩn TOEIC (Part 1 - 7)',
-  description: 'Bộ câu hỏi chuẩn định dạng ETS mới nhất bao gồm cả Listening và Reading kèm giải thích chi tiết tiếng Việt.',
+  title: 'Bộ Đề Khởi Động Chuẩn TOEIC (Part 5, 6 & 7)',
+  description: 'Bộ câu hỏi chuẩn định dạng ETS mới nhất về Reading (Part 5, 6, 7) kèm giải thích chi tiết tiếng Việt. Phần Listening sẽ được cập nhật sớm.',
   sourceLabel: 'ETS Authentic Practice',
-  partsIncluded: [1, 2, 3, 4, 5, 6, 7],
-  questionCount: 16,
+  partsIncluded: [5, 6, 7],
+  questionCount: 10,
   createdAt: Date.now() - 86400000,
-  updatedAt: Date.now(),
+  updatedAt: 1761160000000,
   schemaVersion: '1.0.0',
 };
 
@@ -156,34 +156,8 @@ export const CAT_MAIL_PACK: StudyPack = {
   schemaVersion: '1.0.0',
 };
 
-// Groups for Part 3, 4, 6, 7
+// Groups for Part 6, 7
 export const STARTER_GROUPS: QuestionGroup[] = [
-  {
-    id: 'group-part3-1',
-    packId: 'pack-starter-all-parts',
-    part: 3,
-    passageTitle: 'Cuộc đối thoại tại văn phòng công ty (Questions 32-34)',
-    transcript:
-      'Man: Hi Sarah, have you finished reviewing the financial report for the third quarter yet?\n' +
-      'Woman: Almost, David. I just need to verify the overseas travel expenses from the marketing team. They seemed unusually high.\n' +
-      'Man: Ah, that is because they attended two international conferences in Tokyo last month. If you need the receipts, I can forward them to you.\n' +
-      'Woman: That would be very helpful. Once I get those, I can send the final document to the board by 3 P.M.',
-    questionIds: ['q-p3-1', 'q-p3-2', 'q-p3-3'],
-    order: 1,
-  },
-  {
-    id: 'group-part4-1',
-    packId: 'pack-starter-all-parts',
-    part: 4,
-    passageTitle: 'Thông báo trên máy bay/sân bay (Questions 71-73)',
-    transcript:
-      'Speaker: Good morning, passengers on Flight 412 bound for London. This is your captain speaking. ' +
-      'Due to unexpected heavy fog at Heathrow Airport, our departure will be delayed by approximately forty-five minutes. ' +
-      'Our ground crew is currently loading the remaining cargo. Please remain seated with your seatbelts fastened. ' +
-      'Flight attendants will now pass through the cabin offering complimentary refreshments. We apologize for the inconvenience and thank you for your patience.',
-    questionIds: ['q-p4-1', 'q-p4-2', 'q-p4-3'],
-    order: 2,
-  },
   {
     id: 'group-part6-1',
     packId: 'pack-starter-all-parts',
@@ -245,171 +219,6 @@ export const STARTER_GROUPS: QuestionGroup[] = [
 ];
 
 export const STARTER_QUESTIONS: Question[] = [
-  // Part 1: Photograph
-  {
-    id: 'q-p1-1',
-    packId: 'pack-starter-all-parts',
-    part: 1,
-    prompt: 'Look at the picture and listen to the four statements. Select the statement that best describes what you see in the picture.',
-    imageAssetId: 'svg-part1-office',
-    choices: [
-      { id: 'c1', text: '(A) A woman is typing on a laptop computer at a desk.' },
-      { id: 'c2', text: '(B) A man is cleaning a whiteboard in the conference room.' },
-      { id: 'c3', text: '(C) People are exiting an auditorium after a lecture.' },
-      { id: 'c4', text: '(D) Some documents are being filed into a metal cabinet.' },
-    ],
-    correctChoiceId: 'c1',
-    explanation: 'Hình ảnh mô tả người phụ nữ đang ngồi tại bàn làm việc và gõ phím máy tính xách tay (typing on a laptop computer). Các đáp án khác sai về chủ thể và hành động.',
-    topicTags: ['Part 1', 'Action', 'Office'],
-    difficulty: 'easy',
-    originalNumber: 1,
-  },
-  // Part 2: Question & Response
-  {
-    id: 'q-p2-1',
-    packId: 'pack-starter-all-parts',
-    part: 2,
-    prompt: 'Listen to the question and select the best response: "Where did you leave the signed contract?"',
-    choices: [
-      { id: 'c1', text: '(A) On Ms. Jenkins\'s desk in office 302.' },
-      { id: 'c2', text: '(B) Yes, I already signed it yesterday.' },
-      { id: 'c3', text: '(C) The meeting will start at 10 A.M.' },
-    ],
-    correctChoiceId: 'c1',
-    explanation: 'Câu hỏi bắt đầu bằng "Where" (ở đâu). Đáp án (A) chỉ rõ vị trí: "On Ms. Jenkins\'s desk". Đáp án (B) bẫy từ đồng âm signed và trả lời Yes/No cho câu hỏi Wh-question là sai.',
-    topicTags: ['Part 2', 'Where-question', 'Location'],
-    difficulty: 'easy',
-    originalNumber: 7,
-  },
-  {
-    id: 'q-p2-2',
-    packId: 'pack-starter-all-parts',
-    part: 2,
-    prompt: 'Listen to the question and select the best response: "Should we take a taxi or catch the subway to the airport?"',
-    choices: [
-      { id: 'c1', text: '(A) At the check-in counter.' },
-      { id: 'c2', text: '(B) The subway will avoid the rush hour traffic.' },
-      { id: 'c3', text: '(C) No, I haven\'t seen him today.' },
-    ],
-    correctChoiceId: 'c2',
-    explanation: 'Đây là câu hỏi lựa chọn (Or-question). Đáp án (B) đưa ra lý do chọn tàu điện ngầm để tránh tắc đường giờ cao điểm.',
-    topicTags: ['Part 2', 'Or-question', 'Transportation'],
-    difficulty: 'medium',
-    originalNumber: 8,
-  },
-
-  // Part 3: Conversation questions
-  {
-    id: 'q-p3-1',
-    packId: 'pack-starter-all-parts',
-    groupId: 'group-part3-1',
-    part: 3,
-    prompt: 'What document is the woman currently working on?',
-    choices: [
-      { id: 'c1', text: 'A marketing strategy proposal' },
-      { id: 'c2', text: 'A third-quarter financial report' },
-      { id: 'c3', text: 'A travel booking confirmation' },
-      { id: 'c4', text: 'A conference presentation' },
-    ],
-    correctChoiceId: 'c2',
-    explanation: 'Trong đối thoại, người nam hỏi: "have you finished reviewing the financial report for the third quarter yet?" và người nữ đáp "Almost".',
-    topicTags: ['Part 3', 'Detail', 'Finance'],
-    difficulty: 'easy',
-    originalNumber: 32,
-  },
-  {
-    id: 'q-p3-2',
-    packId: 'pack-starter-all-parts',
-    groupId: 'group-part3-1',
-    part: 3,
-    prompt: 'Why were the marketing team\'s expenses unusually high?',
-    choices: [
-      { id: 'c1', text: 'They hired additional contractors.' },
-      { id: 'c2', text: 'They purchased new video equipment.' },
-      { id: 'c3', text: 'They attended international events abroad.' },
-      { id: 'c4', text: 'They relocated their main branch office.' },
-    ],
-    correctChoiceId: 'c3',
-    explanation: 'Người nam giải thích: "that is because they attended two international conferences in Tokyo last month."',
-    topicTags: ['Part 3', 'Reason', 'Travel'],
-    difficulty: 'medium',
-    originalNumber: 33,
-  },
-  {
-    id: 'q-p3-3',
-    packId: 'pack-starter-all-parts',
-    groupId: 'group-part3-1',
-    part: 3,
-    prompt: 'What does the man offer to do?',
-    choices: [
-      { id: 'c1', text: 'Send expense receipts to the woman' },
-      { id: 'c2', text: 'Schedule a conference call' },
-      { id: 'c3', text: 'Speak directly with the board members' },
-      { id: 'c4', text: 'Book hotel accommodations' },
-    ],
-    correctChoiceId: 'c1',
-    explanation: 'Người nam nói: "If you need the receipts, I can forward them to you."',
-    topicTags: ['Part 3', 'Offer', 'Office'],
-    difficulty: 'medium',
-    originalNumber: 34,
-  },
-
-  // Part 4: Short Talk questions
-  {
-    id: 'q-p4-1',
-    packId: 'pack-starter-all-parts',
-    groupId: 'group-part4-1',
-    part: 4,
-    prompt: 'Who most likely is the speaker?',
-    choices: [
-      { id: 'c1', text: 'A flight attendant' },
-      { id: 'c2', text: 'An airline pilot' },
-      { id: 'c3', text: 'An air traffic controller' },
-      { id: 'c4', text: 'A security officer' },
-    ],
-    correctChoiceId: 'c2',
-    explanation: 'Người nói giới thiệu rõ ràng: "This is your captain speaking" (cơ trưởng chuyến bay).',
-    topicTags: ['Part 4', 'Speaker', 'Announcement'],
-    difficulty: 'easy',
-    originalNumber: 71,
-  },
-  {
-    id: 'q-p4-2',
-    packId: 'pack-starter-all-parts',
-    groupId: 'group-part4-1',
-    part: 4,
-    prompt: 'Why has the departure been delayed?',
-    choices: [
-      { id: 'c1', text: 'Mechanical problems' },
-      { id: 'c2', text: 'Adverse weather conditions' },
-      { id: 'c3', text: 'A missing crew member' },
-      { id: 'c4', text: 'Runway maintenance' },
-    ],
-    correctChoiceId: 'c2',
-    explanation: 'Cơ trưởng thông báo: "Due to unexpected heavy fog at Heathrow Airport" (sương mù dày đặc = thời tiết bất lợi).',
-    topicTags: ['Part 4', 'Cause', 'Travel'],
-    difficulty: 'medium',
-    originalNumber: 72,
-  },
-  {
-    id: 'q-p4-3',
-    packId: 'pack-starter-all-parts',
-    groupId: 'group-part4-1',
-    part: 4,
-    prompt: 'What will happen next in the cabin?',
-    choices: [
-      { id: 'c1', text: 'Baggage will be unloaded.' },
-      { id: 'c2', text: 'Complimentary drinks will be distributed.' },
-      { id: 'c3', text: 'Passengers will be asked to disembark.' },
-      { id: 'c4', text: 'The safety demonstration will begin.' },
-    ],
-    correctChoiceId: 'c2',
-    explanation: 'Cơ trưởng nói: "Flight attendants will now pass through the cabin offering complimentary refreshments."',
-    topicTags: ['Part 4', 'Next Action', 'Service'],
-    difficulty: 'easy',
-    originalNumber: 73,
-  },
-
   // Part 5: Incomplete Sentences
   {
     id: 'q-p5-1',

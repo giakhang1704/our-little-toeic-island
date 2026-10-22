@@ -281,7 +281,7 @@ export const App: React.FC = () => {
       )}
 
       {/* Main Body Content - Wide full-bleed layout */}
-      <main className="flex-1 w-full max-w-[1536px] mx-auto p-4 md:p-6 pb-20">
+      <main className={`flex-1 w-full mx-auto p-3 md:p-6 pb-20 ${activeSessionConfig ? "max-w-none" : "max-w-[1536px]"}`}>
         {/* If Active Practice Session */}
         {activeSessionConfig ? (
           <PracticeSession

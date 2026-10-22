@@ -319,7 +319,7 @@ export const PracticeSession: React.FC<PracticeSessionProps> = ({
     });
 
     return (
-      <div className="max-w-4xl mx-auto bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-slate-200 space-y-8 animate-in fade-in">
+      <div className="w-full mx-auto bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-slate-200 space-y-8 animate-in fade-in">
         {/* Top Header Card */}
         <div className="text-center space-y-2">
           <div className="text-5xl animate-bounce">🏆</div>
@@ -518,7 +518,7 @@ export const PracticeSession: React.FC<PracticeSessionProps> = ({
   const orderedChoices = getOrderedChoices(currentQ, currentResp?.choiceOrder);
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6 animate-in fade-in">
+    <div className="w-full mx-auto space-y-6 animate-in fade-in">
       {/* Test Mode Security Banner */}
       {mode === 'test' && (
         <div className="bg-amber-500/10 border-2 border-amber-400/80 p-3.5 rounded-2xl flex items-center justify-between text-xs text-amber-950 font-medium shadow-xs">
@@ -624,7 +624,7 @@ export const PracticeSession: React.FC<PracticeSessionProps> = ({
           currentGroup?.passageDocuments ||
           currentQ.imageAssetId ||
           currentQ.part <= 4) && (
-          <div className="lg:col-span-6 bg-white rounded-3xl p-6 border border-slate-200 shadow-sm space-y-4">
+          <div className="lg:col-span-7 min-w-0 bg-white rounded-3xl p-5 md:p-8 border border-sky-200 shadow-sm space-y-5">
             {/* Audio Bar for Listening Parts */}
             {currentQ.part <= 4 && (
               <div className="bg-sky-50 p-4 rounded-2xl border border-sky-100 flex items-center justify-between">
@@ -670,10 +670,10 @@ export const PracticeSession: React.FC<PracticeSessionProps> = ({
             {/* Part 6 Single Passage */}
             {currentGroup?.passageText && (
               <div className="space-y-2">
-                <h4 className="font-extrabold text-slate-800 text-xs">
+                <h4 className="font-extrabold text-slate-800 text-base md:text-lg">
                   {currentGroup.passageTitle || 'Đoạn văn đọc hiểu'}
                 </h4>
-                <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 text-xs md:text-sm text-slate-700 leading-relaxed font-mono whitespace-pre-wrap max-h-96 overflow-y-auto">
+                <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 text-base md:text-lg text-slate-800 leading-[1.9] whitespace-pre-wrap break-words ">
                   {currentGroup.passageText}
                 </div>
               </div>
@@ -681,13 +681,13 @@ export const PracticeSession: React.FC<PracticeSessionProps> = ({
 
             {/* Part 7 Multi-Document Passages */}
             {currentGroup?.passageDocuments && (
-              <div className="space-y-4 max-h-[500px] overflow-y-auto pr-1">
+              <div className="space-y-6">
                 {currentGroup.passageDocuments.map((doc, docIdx) => (
                   <div key={docIdx} className="space-y-1.5">
                     <span className="font-extrabold text-sky-800 text-xs bg-sky-50 px-2.5 py-0.5 rounded-md inline-block">
                       {doc.label}
                     </span>
-                    <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 text-xs md:text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">
+                    <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 text-base md:text-lg text-slate-800 leading-[1.9] whitespace-pre-wrap break-words">
                       {doc.text}
                     </div>
                   </div>
@@ -714,9 +714,9 @@ export const PracticeSession: React.FC<PracticeSessionProps> = ({
             currentGroup?.passageDocuments ||
             currentQ.imageAssetId ||
             currentQ.part <= 4
-              ? 'lg:col-span-6'
-              : 'lg:col-span-12 max-w-2xl mx-auto'
-          } w-full bg-white rounded-3xl p-6 border border-slate-200 shadow-sm space-y-6`}
+              ? 'lg:col-span-5 lg:sticky lg:top-28'
+              : 'lg:col-span-12'
+          } min-w-0 w-full bg-white rounded-3xl p-5 md:p-8 border border-slate-200 shadow-sm space-y-6`}
         >
           {/* Question Prompt */}
           <div>
@@ -734,7 +734,7 @@ export const PracticeSession: React.FC<PracticeSessionProps> = ({
               ))}
             </div>
 
-            <h3 className="text-base md:text-lg font-bold text-slate-800 leading-relaxed">
+            <h3 className="text-xl md:text-2xl font-extrabold text-slate-900 leading-relaxed break-words">
               {currentQ.part === 2 && mode === 'test'
                 ? '(Nghe audio và chọn câu trả lời tương ứng)'
                 : currentQ.prompt}
@@ -765,7 +765,7 @@ export const PracticeSession: React.FC<PracticeSessionProps> = ({
                 <button
                   key={choice.id}
                   onClick={() => handleSelectChoice(choice.id)}
-                  className={`w-full p-4 rounded-2xl border-2 font-semibold text-sm transition-all text-left flex items-start gap-3 ${btnStyle}`}
+                  className={`w-full p-4 md:p-5 rounded-2xl border-2 font-semibold text-base md:text-lg transition-all text-left flex items-start gap-3 ${btnStyle}`}
                 >
                   <span className="w-6 h-6 rounded-lg bg-white border border-slate-200 flex items-center justify-center font-bold text-xs shrink-0">
                     {label}
