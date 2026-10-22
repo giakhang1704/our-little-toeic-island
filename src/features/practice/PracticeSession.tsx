@@ -22,6 +22,7 @@ interface PracticeSessionProps {
   packId?: string;
   questionLimit?: number;
   missionType?: 'review';
+  resumeAttemptId?: string;
   onExit: () => void;
 }
 
@@ -32,6 +33,7 @@ export const PracticeSession: React.FC<PracticeSessionProps> = ({
   packId,
   questionLimit,
   missionType,
+  resumeAttemptId,
   onExit,
 }) => {
   const [questions, setQuestions] = useState<Question[]>([]);
@@ -39,7 +41,14 @@ export const PracticeSession: React.FC<PracticeSessionProps> = ({
   const [currentIndex, setCurrentIndex] = useState(0);
   const [responses, setResponses] = useState<Record<string, AttemptResponse>>({});
   const [isFinished, setIsFinished] = useState(false);
-  const [attemptId] = useState(`att-${Date.now()}`);
+  const [attemptId] = useState(() => resumeAttemptId ?? `att-${crypto.randomUUID()}`);
+  const startedAt = useRef(Date.now());
+  const openedAt = useRef(Date.now());
+  const previousSeconds = useRef(0);
+  const elapsedSeconds = () => previousSeconds.current + Math.max(0, Math.floor((Date.now() - openedAt.current) / 1000));
+  const saveQueue = useRef<Promise<void>>(Promise.resolve());
+  const completing = useRef(false);
+  const [saveError, setSaveError] = useState(false);
 
   // Test mode timer (seconds remaining)
   const [secondsRemaining, setSecondsRemaining] = useState<number>(0);
@@ -59,6 +68,24 @@ export const PracticeSession: React.FC<PracticeSessionProps> = ({
   // Load questions
   useEffect(() => {
     async function initSession() {
+      if (resumeAttemptId) {
+        const saved = await repository.getAttemptById(resumeAttemptId);
+        if (saved) {
+          const loaded = await repository.getQuestionsByIds(saved.questionIds);
+          const byId = new Map(loaded.map((q) => [q.id, q]));
+          const pool = saved.questionIds.flatMap((id) => byId.has(id) ? [byId.get(id)!] : []);
+          startedAt.current = saved.startedAt;
+          previousSeconds.current = saved.timeSpentSeconds;
+          openedAt.current = Date.now();
+          setGroupsMap(new Map((await repository.getAllGroups()).map((g) => [g.id, g])));
+          setResponses(saved.responses);
+          setCurrentIndex(Math.min(saved.currentQuestionIndex, Math.max(0, pool.length - 1)));
+          setIsFinished(saved.isFinished);
+          setQuestions(pool);
+          setSecondsRemaining(Math.max(1, Math.max(pool.length * 75, 120) - saved.timeSpentSeconds));
+          return;
+        }
+      }
       let pool: Question[] = [];
       if (partFilter) {
         pool = await repository.getQuestionsByPart(partFilter);
@@ -105,6 +132,19 @@ export const PracticeSession: React.FC<PracticeSessionProps> = ({
 
     initSession();
   }, [mode, partFilter, packId, questionLimit]);
+
+  useEffect(() => {
+    if (!questions.length || isFinished || completing.current) return;
+    const snapshot: Attempt = {
+      id: attemptId, packId, mode, title, partFilter,
+      questionIds: questions.map((q) => q.id), currentQuestionIndex: currentIndex,
+      responses, startedAt: startedAt.current,
+      timeSpentSeconds: elapsedSeconds(),
+      isFinished: false,
+    };
+    saveQueue.current = saveQueue.current.then(() => repository.saveAttempt(snapshot))
+      .then(() => setSaveError(false)).catch(() => setSaveError(true));
+  }, [questions, responses, currentIndex, isFinished, secondsRemaining]);
 
   // Timer countdown
   useEffect(() => {
@@ -249,6 +289,8 @@ export const PracticeSession: React.FC<PracticeSessionProps> = ({
   };
 
   const handleCompleteSession = async () => {
+    if (completing.current || isFinished) return;
+    completing.current = true;
     setShowSubmitConfirm(false);
     soundFx.playWaterDrop();
     confetti({ particleCount: 70, spread: 85, origin: { y: 0.6 } });
@@ -276,14 +318,21 @@ export const PracticeSession: React.FC<PracticeSessionProps> = ({
       questionIds: questions.map((q) => q.id),
       currentQuestionIndex: currentIndex,
       responses,
-      startedAt: Date.now() - 60000,
+      startedAt: startedAt.current,
       completedAt: Date.now(),
-      timeSpentSeconds: 60,
+      timeSpentSeconds: elapsedSeconds(),
       isFinished: true,
       score: { correct, total, accuracy },
     };
 
-    await repository.saveAttempt(attempt);
+    try {
+      await saveQueue.current;
+      await repository.saveAttempt(attempt);
+    } catch {
+      completing.current = false;
+      setSaveError(true);
+      return;
+    }
 
     // Award water drops
     await repository.awardDrops(
@@ -522,6 +571,7 @@ export const PracticeSession: React.FC<PracticeSessionProps> = ({
 
   return (
     <div className="w-full mx-auto space-y-6 animate-in fade-in">
+      {saveError && <p role="alert" className="rounded-xl bg-red-50 p-3 text-red-800">Chưa lưu được bài làm. Vui lòng thử lại trước khi đóng trang.</p>}
       {/* Test Mode Security Banner */}
       {mode === 'test' && (
         <div className="bg-amber-500/10 border-2 border-amber-400/80 p-3.5 rounded-2xl flex items-center justify-between text-xs text-amber-950 font-medium shadow-xs">

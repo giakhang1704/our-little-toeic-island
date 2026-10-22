@@ -39,6 +39,7 @@ export const App: React.FC = () => {
     packId?: string;
     questionLimit?: number;
     missionType?: 'review';
+    resumeAttemptId?: string;
     title: string;
   } | null>(null);
 
@@ -320,6 +321,7 @@ export const App: React.FC = () => {
             packId={activeSessionConfig.packId}
             questionLimit={activeSessionConfig.questionLimit}
             missionType={activeSessionConfig.missionType}
+            resumeAttemptId={activeSessionConfig.resumeAttemptId}
             onExit={() => {
               setActiveSessionConfig(null);
               refreshAppData();
@@ -361,7 +363,7 @@ export const App: React.FC = () => {
 
             {currentTab === 'library' && <LibraryView />}
 
-            {currentTab === 'progress' && <ProgressView />}
+            {currentTab === 'progress' && <ProgressView onOpenAttempt={(attempt) => setActiveSessionConfig({ mode: attempt.mode, title: attempt.title, packId: attempt.packId, resumeAttemptId: attempt.id })} />}
           </>
         )}
       </main>

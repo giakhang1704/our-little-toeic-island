@@ -208,7 +208,7 @@ export class AppRepository {
 
   // --- ATTEMPTS ---
   async getActiveAttempt(): Promise<Attempt | undefined> {
-    return db.attempts.where('isFinished').equals(0).first();
+    return db.attempts.filter((attempt) => !attempt.isFinished).first();
   }
 
   async saveAttempt(attempt: Attempt): Promise<void> {

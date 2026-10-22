@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Attempt, Question, ReviewItem } from '../../domain/types';
 import { repository } from '../../data/repositories/appRepository';
 
-export const ProgressView: React.FC = () => {
+export const ProgressView: React.FC<{ onOpenAttempt: (attempt: Attempt) => void }> = ({ onOpenAttempt }) => {
   const [attempts, setAttempts] = useState<Attempt[]>([]);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [reviewItems, setReviewItems] = useState<ReviewItem[]>([]);
@@ -53,7 +53,9 @@ export const ProgressView: React.FC = () => {
   questions.forEach((q) => qMap.set(q.id, q));
 
   attempts.forEach((att) => {
+    if (!att.isFinished && att.mode === 'test') return;
     Object.values(att.responses).forEach((resp) => {
+      if (!att.isFinished && resp.selectedChoiceId === null) return;
       const q = qMap.get(resp.questionId);
       if (!q) return;
 
@@ -85,6 +87,20 @@ export const ProgressView: React.FC = () => {
 
   return (
     <div className="space-y-8 animate-in fade-in">
+      <section className="bg-white rounded-3xl p-6 border border-slate-200 space-y-4">
+        <h2 className="text-xl font-extrabold">Lịch sử làm bài</h2>
+        <p className="text-sm text-slate-500">Tự động lưu trên trình duyệt này sau mỗi câu trả lời.</p>
+        {attempts.length === 0 && <p>Chưa có bài làm nào.</p>}
+        {attempts.map((attempt) => {
+          const answered = Object.values(attempt.responses).filter((r) => r.selectedChoiceId !== null).length;
+          return <div key={attempt.id} className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border p-4">
+            <div><h3 className="font-bold">{attempt.title}</h3>
+              <p className="text-sm text-slate-500">{new Date(attempt.startedAt).toLocaleString('vi-VN')} · {attempt.isFinished ? `Đã nộp · ${attempt.score?.correct ?? 0}/${attempt.questionIds.length} câu đúng` : `Đang làm · ${answered}/${attempt.questionIds.length} câu đã trả lời`}</p>
+            </div>
+            <button onClick={() => onOpenAttempt(attempt)} className="rounded-xl bg-sky-600 px-4 py-2 font-bold text-white">{attempt.isFinished ? 'Xem kết quả →' : 'Tiếp tục làm →'}</button>
+          </div>;
+        })}
+      </section>
       {/* Target 800+ Banner */}
       <div className="bg-gradient-to-r from-sky-500 via-indigo-500 to-purple-600 rounded-3xl p-6 md:p-8 text-white shadow-cozy flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
         <div>
