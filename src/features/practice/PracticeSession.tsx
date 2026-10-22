@@ -21,6 +21,7 @@ interface PracticeSessionProps {
   partFilter?: TOEICPart;
   packId?: string;
   questionLimit?: number;
+  missionType?: 'review';
   onExit: () => void;
 }
 
@@ -30,6 +31,7 @@ export const PracticeSession: React.FC<PracticeSessionProps> = ({
   partFilter,
   packId,
   questionLimit,
+  missionType,
   onExit,
 }) => {
   const [questions, setQuestions] = useState<Question[]>([]);
@@ -147,7 +149,7 @@ export const PracticeSession: React.FC<PracticeSessionProps> = ({
   const answeredCount = Object.values(responses).filter((r) => r.selectedChoiceId !== null).length;
   const unansweredCount = questions.length - answeredCount;
 
-  const handleSelectChoice = (choiceId: string) => {
+  const handleSelectChoice = async (choiceId: string) => {
     if (isCurrentAnswered && mode === 'practice') return; // in practice mode, locked after pick
     soundFx.playSoftPop();
 
@@ -170,8 +172,9 @@ export const PracticeSession: React.FC<PracticeSessionProps> = ({
       if (!isCorrect || currentResp?.isGuessed) {
         repository.recordMistakeForReview(currentQ.id, currentQ.part);
       }
-      const missionType = currentQ.part <= 4 ? 'listening' : 'reading';
-      repository.incrementMissionProgress(missionType, 1);
+      const progressType = currentQ.part <= 4 ? 'listening' : 'reading';
+      await repository.incrementMissionProgress(progressType, 1);
+      if (missionType === 'review') await repository.incrementMissionProgress('review', 1);
     }
   };
 

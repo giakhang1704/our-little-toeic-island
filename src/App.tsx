@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { repository } from './data/repositories/appRepository';
 import { soundFx } from './utils/audio';
-import { TOEICPart, UserProfile, UserSettings } from './domain/types';
+import { Mission, TOEICPart, UserProfile, UserSettings } from './domain/types';
 import { IslandView } from './features/island/IslandView';
 import { PracticeHome } from './features/practice/PracticeHome';
 import { PracticeSession } from './features/practice/PracticeSession';
@@ -38,10 +38,12 @@ export const App: React.FC = () => {
     partFilter?: TOEICPart;
     packId?: string;
     questionLimit?: number;
+    missionType?: 'review';
     title: string;
   } | null>(null);
 
   const [isPlayingCatMail, setIsPlayingCatMail] = useState(false);
+  const [autoStartReview, setAutoStartReview] = useState(false);
 
   // Initialize DB and profiles
   useEffect(() => {
@@ -132,6 +134,33 @@ export const App: React.FC = () => {
   const handleLogoutSwitchProfile = () => {
     soundFx.playSoftPop();
     setShowProfileSelector(true);
+  };
+
+  const handleStartMission = async (mission: Mission) => {
+    if (mission.isCompleted) return;
+    if (mission.type === 'cat_mail' || mission.type === 'any') {
+      setIsPlayingCatMail(true);
+      return;
+    }
+    if (mission.type === 'review') {
+      const reviews = await repository.getAllReviewItems();
+      const questions = await repository.getQuestionsByIds(reviews.map((r) => r.questionId));
+      if (questions.length > 0) {
+        setAutoStartReview(true);
+        setCurrentTab('review');
+        return;
+      }
+    }
+    const questions = await repository.getAllQuestions();
+    const eligible = questions.filter((q) => mission.type === 'listening' ? q.part <= 4 : q.part >= 5);
+    const part = eligible.find((q) => q.part === 5)?.part ?? eligible[0]?.part;
+    if (!part) { setCurrentTab('library'); return; }
+    setActiveSessionConfig({
+      mode: 'practice', partFilter: part,
+      questionLimit: Math.max(1, mission.targetCount - mission.currentCount),
+      title: mission.title,
+      missionType: mission.type === 'review' ? 'review' : undefined,
+    });
   };
 
   if (!isDbReady) {
@@ -290,6 +319,7 @@ export const App: React.FC = () => {
             partFilter={activeSessionConfig.partFilter}
             packId={activeSessionConfig.packId}
             questionLimit={activeSessionConfig.questionLimit}
+            missionType={activeSessionConfig.missionType}
             onExit={() => {
               setActiveSessionConfig(null);
               refreshAppData();
@@ -309,6 +339,7 @@ export const App: React.FC = () => {
           <>
             {currentTab === 'island' && (
               <IslandView
+                onStartMission={handleStartMission}
                 onNavigateTab={(tab) => setCurrentTab(tab)}
                 onPlayCatMail={() => setIsPlayingCatMail(true)}
                 onStartDueReview={() => setCurrentTab('review')}
@@ -325,7 +356,7 @@ export const App: React.FC = () => {
             )}
 
             {currentTab === 'review' && (
-              <ReviewGarden onBackToHome={() => setCurrentTab('island')} />
+              <ReviewGarden autoStart={autoStartReview} onAutoStarted={() => setAutoStartReview(false)} onBackToHome={() => setCurrentTab('island')} />
             )}
 
             {currentTab === 'library' && <LibraryView />}

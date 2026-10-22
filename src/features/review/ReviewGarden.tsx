@@ -7,7 +7,7 @@ import { REWARD_AMOUNTS } from '../../domain/rewards/rewards';
 import { formatDate } from '../../domain/scheduling/scheduling';
 import { getOrderedChoices } from '../../domain/shuffle/shuffle';
 
-export const ReviewGarden: React.FC<{ onBackToHome?: () => void }> = ({ onBackToHome }) => {
+export const ReviewGarden: React.FC<{ onBackToHome?: () => void; autoStart?: boolean; onAutoStarted?: () => void }> = ({ onBackToHome, autoStart, onAutoStarted }) => {
   const [reviewItems, setReviewItems] = useState<ReviewItem[]>([]);
   const [questionsMap, setQuestionsMap] = useState<Map<string, Question>>(new Map());
   const [filterPart, setFilterPart] = useState<number | 'all'>('all');
@@ -70,6 +70,16 @@ export const ReviewGarden: React.FC<{ onBackToHome?: () => void }> = ({ onBackTo
     soundFx.playSoftPop();
     setSelectedChoiceId(choiceId);
   };
+
+  useEffect(() => {
+    if (!autoStart || questionsMap.size === 0) return;
+    const valid = reviewItems.filter((item) => questionsMap.has(item.questionId));
+    const due = valid.filter((item) => item.nextDueDate <= todayStr);
+    if (valid.length > 0) {
+      startWateringSession((due.length > 0 ? due : valid).slice(0, 5));
+      onAutoStarted?.();
+    }
+  }, [autoStart, reviewItems, questionsMap]);
 
   const handleSubmitAnswer = async () => {
     if (!selectedChoiceId) return;

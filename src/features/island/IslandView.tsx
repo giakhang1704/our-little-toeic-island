@@ -16,6 +16,7 @@ import { MailboxModal } from './MailboxModal';
 import { ShopModal } from './ShopModal';
 
 interface IslandViewProps {
+  onStartMission: (mission: Mission) => void;
   onNavigateTab: (tab: 'practice' | 'review' | 'library' | 'progress') => void;
   onPlayCatMail: () => void;
   onStartDueReview: () => void;
@@ -24,6 +25,7 @@ interface IslandViewProps {
 }
 
 export const IslandView: React.FC<IslandViewProps> = ({
+  onStartMission,
   onNavigateTab,
   onPlayCatMail,
   onStartDueReview,
@@ -242,6 +244,15 @@ export const IslandView: React.FC<IslandViewProps> = ({
                     />
                   </div>
                 </div>
+                {!mission.isCompleted && (
+                  <button
+                    onClick={() => { soundFx.playSoftPop(); onStartMission(mission); }}
+                    className="mt-4 w-full flex items-center justify-between rounded-xl bg-sky-600 hover:bg-sky-700 px-4 py-2.5 text-xs font-bold text-white transition-colors"
+                    aria-label={`Làm nhiệm vụ: ${mission.title}`}
+                  >
+                    <span>Làm nhiệm vụ</span><span aria-hidden="true">→</span>
+                  </button>
+                )}
               </div>
             );
           })}
