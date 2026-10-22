@@ -77,21 +77,21 @@ export class AppRepository {
         'Quà tặng chào mừng đến với Hòn Đảo TOEIC!'
       );
       await db.transactions.add(welcomeTx);
-    } else {
-      // Auto-sync bundled packs added to source code (e.g. when developer pushes new packs)
-      for (const item of BUNDLED_PACKS) {
-        const existing = await db.studyPacks.get(item.pack.id);
-        if (!existing) {
-          // New study pack pushed to GitHub! Auto-import into user's library
-          await db.studyPacks.put(item.pack);
-          if (item.groups.length > 0) await db.questionGroups.bulkPut(item.groups);
-          if (item.questions.length > 0) await db.questions.bulkPut(item.questions);
-        } else if (item.pack.updatedAt > existing.updatedAt) {
-          // Updated study pack! Refresh questions & groups without touching user attempts or reviews
-          await db.studyPacks.put(item.pack);
-          if (item.groups.length > 0) await db.questionGroups.bulkPut(item.groups);
-          if (item.questions.length > 0) await db.questions.bulkPut(item.questions);
-        }
+    }
+
+    // ALWAYS auto-sync bundled packs from source code (new packs or updated questions)
+    for (const item of BUNDLED_PACKS) {
+      const existing = await db.studyPacks.get(item.pack.id);
+      if (!existing) {
+        // New study pack pushed to GitHub! Auto-import into user's library
+        await db.studyPacks.put(item.pack);
+        if (item.groups.length > 0) await db.questionGroups.bulkPut(item.groups);
+        if (item.questions.length > 0) await db.questions.bulkPut(item.questions);
+      } else if (item.pack.updatedAt > existing.updatedAt) {
+        // Updated study pack! Refresh questions & groups without touching user attempts or reviews
+        await db.studyPacks.put(item.pack);
+        if (item.groups.length > 0) await db.questionGroups.bulkPut(item.groups);
+        if (item.questions.length > 0) await db.questions.bulkPut(item.questions);
       }
     }
 
