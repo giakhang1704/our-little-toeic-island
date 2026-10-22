@@ -7,13 +7,12 @@ import { PracticeHome } from './features/practice/PracticeHome';
 import { PracticeSession } from './features/practice/PracticeSession';
 import { CatMailGame } from './features/practice/CatMailGame';
 import { ReviewGarden } from './features/review/ReviewGarden';
-import { LibraryView } from './features/library/LibraryView';
 import { ProgressView } from './features/progress/ProgressView';
 import { SettingsModal } from './features/settings/SettingsModal';
 import { LoginModal } from './features/auth/LoginModal';
 import { FeatureGuideModal } from './components/guide/FeatureGuideModal';
 
-type NavTab = 'island' | 'practice' | 'review' | 'library' | 'progress';
+type NavTab = 'island' | 'practice' | 'review' | 'progress';
 
 export const App: React.FC = () => {
   const [isDbReady, setIsDbReady] = useState(false);
@@ -155,7 +154,7 @@ export const App: React.FC = () => {
     const questions = await repository.getAllQuestions();
     const eligible = questions.filter((q) => mission.type === 'listening' ? q.part <= 4 : q.part >= 5);
     const part = eligible.find((q) => q.part === 5)?.part ?? eligible[0]?.part;
-    if (!part) { setCurrentTab('library'); return; }
+    if (!part) { setCurrentTab('practice'); return; }
     setActiveSessionConfig({
       mode: 'practice', partFilter: part,
       questionLimit: Math.max(1, mission.targetCount - mission.currentCount),
@@ -280,7 +279,7 @@ export const App: React.FC = () => {
         </div>
       </header>
 
-      {/* Main Navigation Bar (5 Sections: My Island, Practice, Review Garden, Library, Progress) */}
+      {/* Main navigation: island, practice, review and progress */}
       {!activeSessionConfig && !isPlayingCatMail && (
         <nav className="bg-white border-b border-slate-200/80 px-4 md:px-8 py-2.5 sticky top-[57px] z-30 shadow-sm">
           <div className="w-full max-w-[1536px] mx-auto flex items-center justify-between overflow-x-auto gap-2 no-scrollbar">
@@ -288,7 +287,6 @@ export const App: React.FC = () => {
               { id: 'island', label: '🏝️ Đảo Của Tôi' },
               { id: 'practice', label: '📖 Luyện Tập' },
               { id: 'review', label: '🌱 Vườn Ôn Tập' },
-              { id: 'library', label: '📚 Kho Bài Học' },
               { id: 'progress', label: '📊 Tiến Độ 800+' },
             ].map((tab) => (
               <button
@@ -352,6 +350,7 @@ export const App: React.FC = () => {
 
             {currentTab === 'practice' && (
               <PracticeHome
+                onOpenHistory={() => setCurrentTab('progress')}
                 onStartSession={(cfg) => setActiveSessionConfig(cfg)}
                 onPlayCatMail={() => setIsPlayingCatMail(true)}
               />
@@ -361,7 +360,6 @@ export const App: React.FC = () => {
               <ReviewGarden autoStart={autoStartReview} onAutoStarted={() => setAutoStartReview(false)} onBackToHome={() => setCurrentTab('island')} />
             )}
 
-            {currentTab === 'library' && <LibraryView />}
 
             {currentTab === 'progress' && <ProgressView onOpenAttempt={(attempt) => setActiveSessionConfig({ mode: attempt.mode, title: attempt.title, packId: attempt.packId, resumeAttemptId: attempt.id })} />}
           </>

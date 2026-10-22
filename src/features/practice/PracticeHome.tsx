@@ -12,9 +12,10 @@ interface PracticeHomeProps {
     title: string;
   }) => void;
   onPlayCatMail: () => void;
+  onOpenHistory: () => void;
 }
 
-export const PracticeHome: React.FC<PracticeHomeProps> = ({ onStartSession, onPlayCatMail }) => {
+export const PracticeHome: React.FC<PracticeHomeProps> = ({ onStartSession, onPlayCatMail, onOpenHistory }) => {
   const [packs, setPacks] = useState<StudyPack[]>([]);
   const [availableParts, setAvailableParts] = useState<TOEICPart[]>([]);
   const [mode, setMode] = useState<'practice' | 'test'>('test');
@@ -107,6 +108,30 @@ export const PracticeHome: React.FC<PracticeHomeProps> = ({ onStartSession, onPl
 
   return (
     <div className="space-y-8 animate-in fade-in">
+      <section className="space-y-4 rounded-3xl border border-teal-100 bg-teal-50/60 p-4 md:p-6">
+        <div>
+          <h2 className="text-xl font-black text-teal-950">📚 Ngữ pháp theo chủ đề</h2>
+          <p className="mt-1 text-sm text-teal-800">503 câu · 11 chủ điểm · Có đáp án và lời giải tiếng Việt.</p>
+          <p className="mt-1 text-xs text-slate-500">Bài ôn ngữ pháp theo tài liệu, không phải đề TOEIC chính thức. Đáp án được phân tích và có ghi chú ở những câu đã biên tập.</p>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {packs.filter((pack) => pack.id.startsWith('pack-on-tap-ngu-phap-main-')).map((pack, index) => (
+            <article key={pack.id} className="rounded-2xl border border-teal-100 bg-white p-4">
+              <p className="text-xs font-bold text-teal-600">Chủ điểm {index + 1} · {pack.questionCount} câu</p>
+              <h3 className="mt-2 font-extrabold text-slate-800">{pack.title}</h3>
+              <div className="mt-4 flex flex-wrap gap-2">
+                <button className="rounded-xl bg-teal-700 px-3 py-2 text-xs font-bold text-white hover:bg-teal-800" onClick={() => onStartSession({ mode: 'practice', packId: pack.id, questionLimit: 10, title: `${pack.title} · Luyện 10 câu` })}>Luyện 10 câu →</button>
+                <button className="rounded-xl bg-slate-100 px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-200" onClick={() => onStartSession({ mode: 'practice', packId: pack.id, title: `${pack.title} · Toàn bộ chủ điểm` })}>Luyện toàn bộ</button>
+                <button className="rounded-xl bg-amber-50 px-3 py-2 text-xs font-bold text-amber-800 hover:bg-amber-100" onClick={() => onStartSession({ mode: 'test', packId: pack.id, questionLimit: 10, title: `${pack.title} · Kiểm tra 10 câu` })}>Kiểm tra</button>
+              </div>
+            </article>
+          ))}
+        </div>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <p className="text-xs text-teal-800">Tự lưu sau mỗi câu. Tiếp tục bài dở hoặc xem lại kết quả trong lịch sử.</p>
+          <button onClick={onOpenHistory} className="rounded-xl border border-teal-200 bg-white px-4 py-2 text-xs font-bold text-teal-800">Lịch sử làm bài →</button>
+        </div>
+      </section>
       {/* SECTION 1: DEDICATED FULL PRACTICE TESTS (ĐỀ THI HOÀN CHỈNH) */}
       <div className="space-y-4">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
@@ -125,7 +150,7 @@ export const PracticeHome: React.FC<PracticeHomeProps> = ({ onStartSession, onPl
 
         {/* Full Test Packs Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {packs.map((pack) => {
+          {packs.filter((pack) => !pack.id.startsWith('pack-on-tap-ngu-phap-main-')).map((pack) => {
             const hasListening = pack.partsIncluded.some((p) => p <= 4);
             const hasReading = pack.partsIncluded.some((p) => p >= 5);
 

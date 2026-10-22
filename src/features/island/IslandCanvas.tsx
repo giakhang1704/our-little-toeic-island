@@ -8,7 +8,7 @@ interface IslandCanvasProps {
   placements: IslandPlacement[];
   dueReviewCount: number;
   unreadMessageCount: number;
-  onNavigateTab: (tab: 'practice' | 'review' | 'library' | 'progress') => void;
+  onNavigateTab: (tab: 'practice' | 'review' | 'progress') => void;
   onOpenMailbox: () => void;
   onOpenShop: (slotId?: string) => void;
   onPlayCatMail: () => void;
@@ -450,10 +450,10 @@ export const IslandCanvas: React.FC<IslandCanvasProps> = ({
           <path d="M3 1l-6 15 M16 3l-7 16 M-4 8l30 5" stroke="#fff2df" strokeWidth="3" />
           <ellipse cx="10" cy="8" rx="5" ry="3" fill="#a77b54" />
         </g>
-        <g role="button" tabIndex={0} aria-label="Mở thư viện bài học"
-          className="island-hotspot cursor-pointer" onClick={() => onNavigateTab('library')}
-          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onNavigateTab('library'); } }}
-          onMouseEnter={() => setHoveredLocation('📚 Góc đọc bên biển — Mở kho bài học')}
+        <g role="button" tabIndex={0} aria-label="Mở luyện tập theo chủ đề"
+          className="island-hotspot cursor-pointer" onClick={() => onNavigateTab('practice')}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onNavigateTab('practice'); } }}
+          onMouseEnter={() => setHoveredLocation('📚 Góc đọc bên biển — Luyện tập theo chủ đề')}
           onMouseLeave={() => setHoveredLocation(null)}>
           <rect x="485" y="467" width="143" height="112" rx="16" fill="transparent" />
           <ellipse cx="554" cy="542" rx="61" ry="14" fill="#547d65" opacity="0.2" />
@@ -499,7 +499,7 @@ export const IslandCanvas: React.FC<IslandCanvasProps> = ({
         <button onClick={onOpenMailbox} className="rounded-full bg-teal-50 px-3 py-2 hover:bg-teal-100">🏡 Nhà & thư {unreadMessageCount > 0 ? `(${unreadMessageCount})` : ''}</button>
         <button onClick={() => onNavigateTab('review')} className="rounded-full bg-teal-50 px-3 py-2 hover:bg-teal-100">🌱 Vườn ôn tập {dueReviewCount > 0 ? `(${dueReviewCount})` : ''}</button>
         <button onClick={() => onNavigateTab('practice')} className="rounded-full bg-teal-50 px-3 py-2 hover:bg-teal-100">⛵ Luyện tập</button>
-        <button onClick={() => onNavigateTab('library')} className="rounded-full bg-teal-50 px-3 py-2 hover:bg-teal-100">📚 Góc đọc</button>
+        <button onClick={() => onNavigateTab('practice')} className="rounded-full bg-teal-50 px-3 py-2 hover:bg-teal-100">📚 Góc đọc</button>
         <button onClick={() => onNavigateTab('progress')} className="rounded-full bg-teal-50 px-3 py-2 hover:bg-teal-100">🔭 Tiến độ</button>
         <button onClick={handleCatClick} className="rounded-full bg-orange-50 px-3 py-2 hover:bg-orange-100">🐱 Mochi</button>
       </div>

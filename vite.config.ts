@@ -16,8 +16,7 @@ export default defineConfig({
         manualChunks: {
           vendor: ['react', 'react-dom'],
           dexie: ['dexie', 'dexie-react-hooks'],
-          pdf: ['pdfjs-dist'],
-          zip: ['jszip'],
+          'study-content': ['./src/data/seed/grammarTopics.ts', './src/data/seed/reading191026.ts'],
         },
       },
     },

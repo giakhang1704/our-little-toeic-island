@@ -1,4 +1,5 @@
 import 'fake-indexeddb/auto';
+import './content.test';
 import assert from 'node:assert/strict';
 import { db } from '../src/data/database/db';
 import { repository } from '../src/data/repositories/appRepository';
@@ -12,6 +13,10 @@ async function reset() {
 }
 
 await reset();
+const grammarPacks = (await repository.getAllStudyPacks()).filter((pack) => pack.id.startsWith('pack-on-tap-ngu-phap-main-'));
+assert.equal(grammarPacks.length, 11);
+const grammarQuestions = await Promise.all(grammarPacks.map((pack) => repository.getQuestionsByPack(pack.id)));
+assert.equal(grammarQuestions.reduce((sum, questions) => sum + questions.length, 0), 503);
 const initial = await repository.getWaterDropsBalance();
 assert.equal(initial, 15);
 // Two concurrent requests cannot claim the same threshold twice.
@@ -67,5 +72,16 @@ assert.equal((await repository.getLearningMilestones()).find((m) => m.id === 'co
 const afterMilestone = await repository.getWaterDropsBalance();
 await repository.getLearningMilestones();
 assert.equal(await repository.getWaterDropsBalance(), afterMilestone, 'Milestone cannot reward twice');
+await db.close();
+await db.open();
+const saved = await repository.getAttemptById('test-attempt');
+assert.equal(saved!.isFinished, false);
+assert.deepEqual(saved!.questionIds, questions.map((q) => q.id));
+assert.equal((await repository.getActiveAttempt())!.id, saved!.id);
+assert.deepEqual(saved!.responses[questions[0].id].choiceOrder, questions[0].choices.map((c) => c.id));
+await repository.saveAttempt({ ...saved!, isFinished: true, completedAt: Date.now(), score: { correct: 10, total: 10, accuracy: 100 } });
+assert.equal((await repository.getAllAttempts()).length, 1);
+assert.equal((await repository.getAttemptById(saved!.id))!.score!.correct, 10);
+console.log('PASS: answer history persists after database reopen; submission updates the same attempt');
 await db.delete();
 console.log('PASS: lifetime milestone awards once');

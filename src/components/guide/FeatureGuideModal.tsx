@@ -11,6 +11,16 @@ export const FeatureGuideModal: React.FC<FeatureGuideModalProps> = ({ onClose })
 
   const guideSteps = [
     {
+      title: 'Ngữ pháp theo chủ đề & Lịch sử 📚',
+      badge: 'Luyện Tập', icon: '📚', color: 'from-teal-500 to-sky-500',
+      description: '503 câu ngữ pháp chia thành 11 chủ điểm, chọn trực tiếp trong Luyện Tập.',
+      highlights: [
+        'Chọn luyện 10 câu, luyện toàn bộ chủ điểm hoặc kiểm tra có bấm giờ.',
+        'Đáp án tự lưu sau mỗi câu; vào Tiến Độ → Lịch sử làm bài để tiếp tục bài đang làm.',
+        'Bài đã nộp có thể mở lại kết quả, đáp án và lời giải. Dữ liệu lưu riêng trên trình duyệt hiện tại.',
+      ],
+    },
+    {
       title: 'Chào mừng đến với Hòn Đảo TOEIC 🏝️',
       badge: 'Tổng Quan',
       icon: '🏝️',
@@ -85,7 +95,7 @@ export const FeatureGuideModal: React.FC<FeatureGuideModalProps> = ({ onClose })
       highlights: [
         'Nhận giọt nước từ bài luyện tập (+10), tưới cây (+10), Thư cho mèo (+8) và nhiệm vụ ngày (+5).',
         'Ghé Cửa Tiệm Trang Trí để sắm Cây anh đào 🌸, Ghế gỗ 🪵, Đèn đá 🏮, Dù bãi biển ⛱️, Lửa trại 🔥...',
-        'Tự do đặt hoặc thay đổi vật phẩm tại 4 ô trang trí xung quanh đảo.',
+        'Tự do đặt hoặc thay đổi vật phẩm tại 16 ô trang trí. Mở quà và vật phẩm không trừ điểm.',
       ],
     },
   ];

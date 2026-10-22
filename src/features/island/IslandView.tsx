@@ -17,7 +17,7 @@ import { ShopModal } from './ShopModal';
 
 interface IslandViewProps {
   onStartMission: (mission: Mission) => void;
-  onNavigateTab: (tab: 'practice' | 'review' | 'library' | 'progress') => void;
+  onNavigateTab: (tab: 'practice' | 'review' | 'progress') => void;
   onPlayCatMail: () => void;
   onStartDueReview: () => void;
   onOpenSettings: () => void;

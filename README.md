@@ -6,6 +6,8 @@ Website học và luyện thi TOEIC Listening & Reading cá nhân hóa hướng 
 
 ## Đảo mở rộng và phần thưởng
 
+Mục **Luyện Tập → Ngữ pháp theo chủ đề** có 503 câu trong 11 chủ điểm, hỗ trợ luyện 10 câu, toàn bộ chủ điểm hoặc kiểm tra. Lịch sử tự lưu từng câu; mở **Tiến Độ → Lịch sử làm bài** để tiếp tục hoặc xem lại kết quả. Tab Kho Bài Học đã được gỡ khỏi giao diện; các bộ đề tích hợp được cập nhật cùng bản deploy.
+
 - Bản đồ có 16 ô trang trí, đảo hải đăng, góc đọc và đài ngắm sao. Trên điện thoại có thể vuốt ngang bản đồ.
 - Giọt nước là điểm tích lũy: mở vật phẩm, vé quà và vé trợ giúp **không trừ điểm**.
 - Mốc đầu tiên: ôm 5 điểm, trà sữa 15, ăn vặt 25, xem phim 40, bữa tối 60, ngày hẹn hò 100.

@@ -1,5 +1,6 @@
 import { READING_191026_PACK } from './reading191026';
 import { EXTRA_REWARDS } from './rewardCatalog';
+import { GRAMMAR_TOPIC_PACKS } from './grammarTopics';
 import {
   DecorationCatalogItem,
   PersonalMessage,
@@ -588,6 +589,7 @@ export const CAT_MAIL_QUESTIONS: Question[] = [
 ];
 
 export const BUNDLED_PACKS = [
+  ...GRAMMAR_TOPIC_PACKS,
   READING_191026_PACK,
   {
     pack: STARTER_STUDY_PACK,
