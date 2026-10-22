@@ -1,3 +1,4 @@
+import { READING_191026_PACK } from './reading191026';
 import {
   DecorationCatalogItem,
   PersonalMessage,
@@ -585,6 +586,7 @@ export const CAT_MAIL_QUESTIONS: Question[] = [
 ];
 
 export const BUNDLED_PACKS = [
+  READING_191026_PACK,
   {
     pack: STARTER_STUDY_PACK,
     groups: STARTER_GROUPS,
