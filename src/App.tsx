@@ -172,18 +172,27 @@ export const App: React.FC = () => {
             </div>
           </div>
 
-          {/* Right actions: Profile, Drops, Sound, Fullscreen, Guide, Settings */}
+          {/* Right actions: Auto-save status, Profile, Drops, Sound, Fullscreen, Guide, Settings */}
           <div className="flex items-center gap-2 md:gap-3 flex-wrap justify-end">
+            {/* Auto-Saved Status Indicator */}
+            <div
+              title="Mọi câu trả lời, giọt nước, cây trong vườn đều được tự động lưu vĩnh viễn trên máy của bạn"
+              className="hidden lg:flex items-center gap-1.5 text-[11px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200/80 px-2.5 py-1.5 rounded-2xl shadow-sm select-none"
+            >
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              <span>Đã tự động lưu</span>
+            </div>
+
             {/* User Profile Badge */}
             {activeProfile && (
               <button
                 onClick={handleLogoutSwitchProfile}
-                title="Click để đổi hồ sơ hoặc tạo hồ sơ mới"
-                className="flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200/80 border border-slate-200/80 px-3 py-1.5 rounded-2xl text-xs font-bold text-slate-700 transition-all shadow-sm"
+                title="Hồ sơ hiện tại. Bấm vào để đổi người học hoặc đăng nhập hồ sơ khác"
+                className="flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200/80 border border-slate-200/80 px-3 py-1.5 rounded-2xl text-xs font-bold text-slate-700 transition-all shadow-sm group"
               >
-                <span>{activeProfile.avatar}</span>
+                <span className="text-sm">{activeProfile.avatar}</span>
                 <span className="truncate max-w-[100px] sm:max-w-none">{activeProfile.name}</span>
-                <span className="text-[10px] text-slate-400">▼</span>
+                <span className="text-[10px] text-slate-400 group-hover:text-slate-600">⇄ Đổi</span>
               </button>
             )}
 
