@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import confetti from 'canvas-confetti';
 import { DecorationCatalogItem, InventoryItem, IslandPlacement } from '../../domain/types';
 import { soundFx } from '../../utils/audio';
+import { EXTRA_ISLAND_SLOTS } from '../../domain/islandSlots';
+import { RewardWallet } from './RewardWallet';
 
 interface ShopModalProps {
   catalog: DecorationCatalogItem[];
@@ -12,6 +14,7 @@ interface ShopModalProps {
   onClose: () => void;
   onBuyItem: (itemId: string) => Promise<{ success: boolean; message: string }>;
   onPlaceItem: (slotId: string, itemId: string | null) => Promise<void>;
+  onRefresh: () => Promise<void>;
 }
 
 export const ShopModal: React.FC<ShopModalProps> = ({
@@ -23,8 +26,10 @@ export const ShopModal: React.FC<ShopModalProps> = ({
   onClose,
   onBuyItem,
   onPlaceItem,
+  onRefresh,
 }) => {
-  const [activeTab, setActiveTab] = useState<'shop' | 'place'>('shop');
+  const [activeTab, setActiveTab] = useState<'shop' | 'place' | 'rewards'>('shop');
+  const [isBuying, setIsBuying] = useState(false);
   const [currentSlot, setCurrentSlot] = useState(selectedSlotId);
   const [feedbackMsg, setFeedbackMsg] = useState<{ text: string; isError: boolean } | null>(null);
 
@@ -33,18 +38,24 @@ export const ShopModal: React.FC<ShopModalProps> = ({
     'slot-beach': 'Bãi Biển',
     'slot-tree': 'Đỉnh Đồi',
     'slot-yard': 'Sân Trung Tâm',
+    ...Object.fromEntries(EXTRA_ISLAND_SLOTS.map((slot) => [slot.id, slot.label])),
   };
 
   const handleBuy = async (item: DecorationCatalogItem) => {
-    soundFx.playSoftPop();
-    const res = await onBuyItem(item.itemId);
-    if (res.success) {
-      soundFx.playSuccessChime();
-      confetti({ particleCount: 30, spread: 60, origin: { y: 0.7 } });
-      setFeedbackMsg({ text: res.message, isError: false });
-    } else {
-      setFeedbackMsg({ text: res.message, isError: true });
-    }
+    if (isBuying) return;
+    setIsBuying(true);
+    try {
+      soundFx.playSoftPop();
+      const res = await onBuyItem(item.itemId);
+      if (res.success) {
+        soundFx.playSuccessChime();
+        confetti({ particleCount: 30, spread: 60, origin: { y: 0.7 } });
+        setFeedbackMsg({ text: res.message, isError: false });
+      } else {
+        setFeedbackMsg({ text: res.message, isError: true });
+      }
+    } catch { setFeedbackMsg({ text: 'Chưa đổi được vật phẩm. Vui lòng thử lại.', isError: true }); }
+    finally { setIsBuying(false); }
   };
 
   const handlePlacementChange = async (itemId: string | null) => {
@@ -65,7 +76,7 @@ export const ShopModal: React.FC<ShopModalProps> = ({
             <div>
               <h2 className="text-xl font-bold text-slate-800">Cửa Tiệm & Trang Trí Đảo</h2>
               <div className="flex items-center gap-2 mt-0.5">
-                <span className="text-xs text-slate-500">Số dư hiện tại:</span>
+                <span className="text-xs text-slate-500">Điểm tích lũy (không trừ):</span>
                 <span className="font-extrabold text-sky-600 bg-sky-50 px-2.5 py-0.5 rounded-full text-xs">
                   💧 {currentDrops} Giọt nước
                 </span>
@@ -82,6 +93,7 @@ export const ShopModal: React.FC<ShopModalProps> = ({
 
         {/* Tab switch */}
         <div className="flex gap-2 pt-4 pb-2">
+          <button onClick={() => setActiveTab('rewards')} className={`flex-1 rounded-xl px-2 py-2 text-xs font-bold ${activeTab === 'rewards' ? 'bg-rose-600 text-white' : 'bg-rose-50 text-rose-700'}`}>🎁 Quà & đặc quyền</button>
           <button
             onClick={() => setActiveTab('shop')}
             className={`flex-1 py-2 text-sm font-bold rounded-xl transition-all ${
@@ -117,9 +129,9 @@ export const ShopModal: React.FC<ShopModalProps> = ({
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto py-2">
-          {activeTab === 'shop' ? (
+          {activeTab === 'rewards' ? <RewardWallet catalog={catalog} inventory={inventory} drops={currentDrops} onBuy={handleBuy} onRefresh={onRefresh} /> : activeTab === 'shop' ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {catalog.map((item) => {
+              {catalog.filter((item) => item.category !== 'voucher' && item.category !== 'perk').map((item) => {
                 const isOwned = inventory.some((inv) => inv.itemId === item.itemId);
                 const affordable = currentDrops >= item.price;
 
@@ -141,7 +153,7 @@ export const ShopModal: React.FC<ShopModalProps> = ({
                     </div>
                     <div className="mt-4 flex items-center justify-between pt-2 border-t border-slate-100">
                       <span className="font-extrabold text-sky-600 text-xs flex items-center gap-1">
-                        💧 {item.price} Giọt nước
+                        Mốc {item.price} 💧
                       </span>
                       {isOwned ? (
                         <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-lg">
@@ -150,14 +162,14 @@ export const ShopModal: React.FC<ShopModalProps> = ({
                       ) : (
                         <button
                           onClick={() => handleBuy(item)}
-                          disabled={!affordable}
+                          disabled={!affordable || isBuying}
                           className={`text-xs font-bold px-3 py-1.5 rounded-xl transition-all ${
                             affordable
                               ? 'bg-emerald-500 hover:bg-emerald-600 text-white shadow'
                               : 'bg-slate-200 text-slate-400 cursor-not-allowed'
                           }`}
                         >
-                          Mua ngay
+                          Mở khóa
                         </button>
                       )}
                     </div>
@@ -217,7 +229,7 @@ export const ShopModal: React.FC<ShopModalProps> = ({
                   </div>
                 ) : (
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                    {inventory.map((inv) => (
+                    {inventory.filter((inv) => inv.category !== 'voucher' && inv.category !== 'perk').map((inv) => (
                       <button
                         key={inv.id}
                         onClick={() => handlePlacementChange(inv.itemId)}

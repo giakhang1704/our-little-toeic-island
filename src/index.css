@@ -2,6 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
+.island-hotspot { transition: filter 180ms ease; }
+.island-hotspot:hover, .island-hotspot:focus-visible {
+  filter: drop-shadow(0 0 7px #fff4ce);
+  outline: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .island-scene *, .island-hotspot { animation: none !important; transition: none !important; }
+}
+
 @layer base {
   body {
     @apply bg-sky-50/40 text-slate-800 font-sans min-h-screen selection:bg-amber-200 selection:text-amber-900;

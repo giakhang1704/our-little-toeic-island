@@ -40,6 +40,7 @@ export const IslandView: React.FC<IslandViewProps> = ({
   const [missions, setMissions] = useState<Mission[]>([]);
   const [dueReviews, setDueReviews] = useState<ReviewItem[]>([]);
   const [waterDrops, setWaterDrops] = useState<number>(0);
+  const [milestones, setMilestones] = useState<Awaited<ReturnType<typeof repository.getLearningMilestones>>>([]);
 
   // Modals
   const [isMailboxOpen, setIsMailboxOpen] = useState(false);
@@ -47,6 +48,7 @@ export const IslandView: React.FC<IslandViewProps> = ({
   const [selectedSlotForShop, setSelectedSlotForShop] = useState<string>('slot-house-garden');
 
   const loadAllIslandData = async () => {
+    setMilestones(await repository.getLearningMilestones());
     const [
       userSettings,
       islandPlacements,
@@ -188,7 +190,7 @@ export const IslandView: React.FC<IslandViewProps> = ({
                 Nhiệm Vụ Hàng Ngày (Daily Missions)
               </h3>
               <p className="text-xs text-slate-500">
-                Hoàn thành cả 3 nhiệm vụ nhận thêm 5 giọt nước thưởng!
+                Hoàn thành 3 nhiệm vụ cơ bản nhận thêm 5 💧. Thử thách mở rộng mang thêm điểm đổi quà!
               </p>
             </div>
           </div>
@@ -259,6 +261,16 @@ export const IslandView: React.FC<IslandViewProps> = ({
         </div>
       </div>
 
+      <section className="rounded-3xl border border-amber-200 bg-amber-50/70 p-6 space-y-4">
+        <h3 className="text-lg font-extrabold text-amber-950">🏆 Cột mốc hành trình</h3>
+        <p className="text-xs text-amber-900">Thưởng tự nhận khi đạt mốc, mỗi mốc một lần. Điểm dùng để xây đảo và đổi quà cho hai đứa.</p>
+        <div className="grid gap-3 md:grid-cols-3">{milestones.map((m) => <div key={m.id} className="rounded-2xl border border-amber-100 bg-white p-4">
+          <div className="flex justify-between gap-2"><h4 className="text-sm font-bold">{m.title}</h4><span className="text-xs font-bold text-amber-700">{m.claimed ? '✓ Đã nhận' : `+${m.reward} 💧`}</span></div>
+          <p className="mt-2 text-xs text-slate-500">{m.description}</p>
+          <p className="mt-3 text-xs font-bold text-teal-700">{Math.min(m.current, m.target)} / {m.target}</p>
+        </div>)}</div>
+      </section>
+
       {/* Modals */}
       {isMailboxOpen && (
         <MailboxModal
@@ -271,6 +283,7 @@ export const IslandView: React.FC<IslandViewProps> = ({
 
       {isShopOpen && (
         <ShopModal
+          onRefresh={loadAllIslandData}
           catalog={catalog}
           inventory={inventory}
           placements={placements}

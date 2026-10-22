@@ -30,7 +30,7 @@ import {
   BUNDLED_PACKS,
 } from '../seed/initialData';
 import { formatDate, processReviewOutcome, createNewReviewItem } from '../../domain/scheduling/scheduling';
-import { calculateBalance, canAfford, createEarnedTransaction, createSpentTransaction, REWARD_AMOUNTS } from '../../domain/rewards/rewards';
+import { calculateBalance, createEarnedTransaction, REWARD_AMOUNTS } from '../../domain/rewards/rewards';
 
 export class AppRepository {
   /**
@@ -269,9 +269,6 @@ export class AppRepository {
   async ensureDailyMissions(): Promise<Mission[]> {
     const today = formatDate(new Date());
     const existingMissions = await db.missions.where('date').equals(today).toArray();
-    if (existingMissions.length > 0) {
-      return existingMissions;
-    }
 
     // Check available content
     const totalQuestions = await db.questions.count();
@@ -314,8 +311,19 @@ export class AppRepository {
       },
     ];
 
-    await db.missions.bulkAdd(missions);
-    return missions;
+    const extra = [
+      { key: 'reading-15', title: 'Bước chân bền bỉ', description: 'Trả lời 15 câu Reading hôm nay', type: 'reading' as const, target: 15, reward: 12 },
+      { key: 'reading-30', title: 'Chinh phục bờ xa', description: 'Trả lời 30 câu Reading hôm nay', type: 'reading' as const, target: 30, reward: 20 },
+      { key: 'review-10', title: 'Khu vườn rực rỡ', description: 'Ôn tập 10 câu hôm nay', type: 'review' as const, target: 10, reward: 12 },
+      { key: 'mail-3', title: 'Bưu tá chăm chỉ', description: 'Hoàn thành 3 vòng Thư Cho Mèo', type: 'cat_mail' as const, target: 3, reward: 15 },
+    ].map((item): Mission => ({ id: `mission-${item.key}-${today}`, date: today, title: item.title, description: item.description, type: item.type, targetCount: item.target, rewardDrops: item.reward, currentCount: 0, isCompleted: false }));
+    const existingIds = new Set(existingMissions.map((m) => m.id));
+    await db.transaction('rw', db.missions, async () => {
+      for (const mission of [...missions, ...extra]) {
+        if (!existingIds.has(mission.id) && !(await db.missions.get(mission.id))) await db.missions.add(mission);
+      }
+    });
+    return db.missions.where('date').equals(today).toArray();
   }
 
   async getDailyMissions(): Promise<Mission[]> {
@@ -323,16 +331,19 @@ export class AppRepository {
   }
 
   async incrementMissionProgress(type: 'review' | 'reading' | 'listening' | 'cat_mail' | 'any', count: number = 1): Promise<void> {
+    if (count <= 0) return;
+    await this.ensureDailyMissions();
+    await db.transaction('rw', [db.missions, db.transactions, db.messages], () => this.incrementMissionProgressLocked(type, count));
+  }
+
+  private async incrementMissionProgressLocked(type: 'review' | 'reading' | 'listening' | 'cat_mail' | 'any', count: number): Promise<void> {
     const today = formatDate(new Date());
     const missions = await db.missions.where('date').equals(today).toArray();
 
     for (const mission of missions) {
       if (mission.isCompleted) continue;
 
-      const isMatch =
-        mission.type === type ||
-        mission.type === 'any' ||
-        (mission.type === 'cat_mail' && (type === 'cat_mail' || type === 'reading'));
+      const isMatch = mission.type === type || mission.type === 'any';
 
       if (isMatch) {
         const newCount = Math.min(mission.targetCount, mission.currentCount + count);
@@ -356,7 +367,8 @@ export class AppRepository {
 
     // Check if all 3 missions are completed for today for bonus
     const updated = await db.missions.where('date').equals(today).toArray();
-    const allDone = updated.length >= 3 && updated.every((m) => m.isCompleted);
+    const coreIds = ['review', 'reading', 'catmail'].map((key) => `mission-${key}-${today}`);
+    const allDone = coreIds.every((id) => updated.some((m) => m.id === id && m.isCompleted));
     if (allDone) {
       await this.awardDrops(
         REWARD_AMOUNTS.MISSION_ALL_BONUS,
@@ -367,36 +379,46 @@ export class AppRepository {
   }
 
   // --- REWARDS & CURRENCY ---
+  async getLearningMilestones() {
+    const [attempts, reviews] = await Promise.all([this.getAllAttempts(), this.getAllReviewItems()]);
+    const solved = new Set(attempts.filter((a) => a.isFinished || a.mode === 'practice')
+      .flatMap((a) => Object.values(a.responses).filter((r) => r.selectedChoiceId && r.isCorrect && !r.isGuessed && !r.eliminatedChoiceIds?.length).map((r) => r.questionId)));
+    const mastered = reviews.filter((r) => r.plantStage === 3).length;
+    const milestones = [
+      { id: 'correct-10', title: '10 câu tự tin', description: 'Tự trả lời đúng 10 câu khác nhau, không đoán mò hay dùng gợi ý', current: solved.size, target: 10, reward: 15 },
+      { id: 'correct-30', title: '30 viên gạch kiến thức', description: 'Tự trả lời đúng 30 câu khác nhau', current: solved.size, target: 30, reward: 35 },
+      { id: 'correct-50', title: 'Ngọn hải đăng tri thức', description: 'Tự trả lời đúng 50 câu khác nhau', current: solved.size, target: 50, reward: 60 },
+      { id: 'correct-100', title: 'Nhà thám hiểm Reading', description: 'Tự trả lời đúng 100 câu khác nhau', current: solved.size, target: 100, reward: 120 },
+      { id: 'blossom-1', title: 'Bông hoa đầu tiên', description: 'Ôn tập thành thạo 1 câu trong vườn', current: mastered, target: 1, reward: 15 },
+      { id: 'blossom-5', title: 'Người chăm vườn', description: 'Có 5 cây nở hoa thuần thục', current: mastered, target: 5, reward: 50 },
+    ];
+    for (const milestone of milestones) {
+      if (milestone.current >= milestone.target) await this.awardDrops(milestone.reward, `milestone-${milestone.id}`, `Cột mốc: ${milestone.title}`);
+    }
+    const transactions = await this.getTransactions();
+    return milestones.map((m) => ({ ...m, claimed: transactions.some((t) => t.referenceId === `milestone-${m.id}`) }));
+  }
   async getWaterDropsBalance(): Promise<number> {
     const txs = await db.transactions.toArray();
     return calculateBalance(txs);
   }
 
   async awardDrops(amount: number, referenceId: string, description: string): Promise<boolean> {
-    // Idempotency check: Don't award twice for same referenceId
-    const existing = await db.transactions.where('referenceId').equals(referenceId).first();
-    if (existing) {
-      return false; // already awarded
-    }
+    return db.transaction('rw', [db.transactions, db.messages], async () => {
+      // Idempotency check: Don't award twice for same referenceId
+      const existing = await db.transactions.where('referenceId').equals(referenceId).first();
+      if (existing) {
+        return false; // already awarded
+      }
 
-    const tx = createEarnedTransaction(amount, referenceId, description);
-    await db.transactions.add(tx);
+      const tx = createEarnedTransaction(amount, referenceId, description);
+      await db.transactions.add(tx);
 
-    // Check personal messages unlocks based on total drops
-    await this.checkMessageUnlocks();
+      // Check personal messages unlocks based on total drops
+      await this.checkMessageUnlocks();
 
-    return true;
-  }
-
-  async spendDrops(amount: number, referenceId: string, description: string): Promise<boolean> {
-    const currentBalance = await this.getWaterDropsBalance();
-    if (!canAfford(currentBalance, amount)) {
-      return false;
-    }
-
-    const tx = createSpentTransaction(amount, referenceId, description);
-    await db.transactions.add(tx);
-    return true;
+      return true;
+    });
   }
 
   async getTransactions(): Promise<RewardTransaction[]> {
@@ -418,32 +440,29 @@ export class AppRepository {
       return { success: false, message: 'Vật phẩm không tồn tại.' };
     }
 
-    const balance = await this.getWaterDropsBalance();
-    if (balance < catalogItem.price) {
-      return { success: false, message: `Bạn cần ${catalogItem.price} giọt nước (hiện có ${balance}).` };
-    }
+    return db.transaction('rw', [db.inventory, db.transactions], async () => {
+      const consumable = catalogItem.category === 'voucher' || catalogItem.category === 'perk';
+      if (!consumable && await db.inventory.where('itemId').equals(itemId).count()) {
+        return { success: false, message: 'Bạn đã sở hữu vật phẩm này.' };
+      }
+      const balance = await this.getWaterDropsBalance();
+      const claimed = consumable ? await db.inventory.where('itemId').equals(itemId).count() : 0;
+      const threshold = catalogItem.price * (claimed + 1);
+      if (balance < threshold) return { success: false, message: `Quà tiếp theo mở ở mốc ${threshold} điểm. Điểm được giữ nguyên.` };
+      const id = crypto.randomUUID();
+      await db.inventory.add({ id: `inv-${id}`, itemId, name: catalogItem.name, icon: catalogItem.icon,
+        category: catalogItem.category, unlockedAt: Date.now() });
+      return { success: true, message: `Đã mở ${catalogItem.name}! Điểm được giữ nguyên.` };
+    });
+  }
 
-    const spent = await this.spendDrops(
-      catalogItem.price,
-      `buy-${itemId}-${Date.now()}`,
-      `Mua trang trí: ${catalogItem.name}`
-    );
-
-    if (!spent) {
-      return { success: false, message: 'Không đủ số dư giọt nước.' };
-    }
-
-    const newItem: InventoryItem = {
-      id: `inv-${itemId}-${Date.now()}`,
-      itemId,
-      name: catalogItem.name,
-      icon: catalogItem.icon,
-      category: catalogItem.category,
-      unlockedAt: Date.now(),
-    };
-
-    await db.inventory.add(newItem);
-    return { success: true, message: `Đã mở khóa ${catalogItem.name} thành công!` };
+  async useReward(inventoryId: string): Promise<boolean> {
+    return db.transaction('rw', db.inventory, async () => {
+      const item = await db.inventory.get(inventoryId);
+      if (!item || item.usedAt || (item.category !== 'voucher' && item.category !== 'perk')) return false;
+      await db.inventory.update(inventoryId, { usedAt: Date.now() });
+      return true;
+    });
   }
 
   async getPlacements(): Promise<IslandPlacement[]> {

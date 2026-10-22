@@ -4,6 +4,21 @@ Website học và luyện thi TOEIC Listening & Reading cá nhân hóa hướng 
 
 ---
 
+## Đảo mở rộng và phần thưởng
+
+- Bản đồ có 16 ô trang trí, đảo hải đăng, góc đọc và đài ngắm sao. Trên điện thoại có thể vuốt ngang bản đồ.
+- Giọt nước là điểm tích lũy: mở vật phẩm, vé quà và vé trợ giúp **không trừ điểm**.
+- Mốc đầu tiên: ôm 5 điểm, trà sữa 15, ăn vặt 25, xem phim 40, bữa tối 60, ngày hẹn hò 100.
+- Mỗi loại vé có mốc nhận riêng. Ví dụ trà sữa: 15, 30, 45 điểm; điểm vẫn giữ nguyên sau khi nhận và dùng vé.
+- Vé quà ngoài đời nằm trong **Cửa Tiệm → Quà & đặc quyền → Ví quà**. Hai bạn tự sắp xếp việc nhận quà và đánh dấu đã dùng.
+- Vé gợi ý chỉ loại một đáp án sai trong chế độ luyện tập; câu được trợ giúp sẽ được đánh dấu cần ôn lại.
+- Có 7 nhiệm vụ mỗi ngày và 6 cột mốc dài hạn. Thưởng mốc chỉ nhận một lần, không đặt lại khi tải trang.
+- Dữ liệu điểm, vật phẩm và vé lưu trên trình duyệt; sao lưu JSON bao gồm trạng thái vé đã dùng.
+
+Chạy `npm test` để kiểm tra mở quà không trừ điểm, chống nhận trùng, dùng vé một lần, sao lưu và nhiệm vụ.
+
+---
+
 ## 🚀 Tính Năng Hoàn Chỉnh Theo Kế Hoạch (Project Plan)
 
 ### 1. Đảo Của Tôi (My Island)

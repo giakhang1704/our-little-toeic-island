@@ -76,6 +76,7 @@ export interface Asset {
 }
 
 export interface AttemptResponse {
+  eliminatedChoiceIds?: string[];
   questionId: string;
   selectedChoiceId: string | null;
   isGuessed: boolean;
@@ -152,10 +153,11 @@ export interface DecorationCatalogItem {
   description: string;
   price: number;
   icon: string;
-  category: 'building' | 'nature' | 'furniture' | 'light' | 'special';
+  category: 'building' | 'nature' | 'furniture' | 'light' | 'special' | 'voucher' | 'perk';
 }
 
 export interface InventoryItem {
+  usedAt?: number;
   id: string; // unique holding ID
   itemId: string;
   name: string;

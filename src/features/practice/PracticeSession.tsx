@@ -49,6 +49,12 @@ export const PracticeSession: React.FC<PracticeSessionProps> = ({
   const saveQueue = useRef<Promise<void>>(Promise.resolve());
   const completing = useRef(false);
   const [saveError, setSaveError] = useState(false);
+  const [hintTickets, setHintTickets] = useState<string[]>([]);
+  const [hintBusy, setHintBusy] = useState(false);
+  const hintLock = useRef(false);
+  useEffect(() => {
+    repository.getInventory().then((items) => setHintTickets(items.filter((item) => item.itemId === 'hint-ticket' && !item.usedAt).map((item) => item.id)));
+  }, []);
 
   // Test mode timer (seconds remaining)
   const [secondsRemaining, setSecondsRemaining] = useState<number>(0);
@@ -190,6 +196,7 @@ export const PracticeSession: React.FC<PracticeSessionProps> = ({
   const unansweredCount = questions.length - answeredCount;
 
   const handleSelectChoice = async (choiceId: string) => {
+    if (hintLock.current || currentResp?.eliminatedChoiceIds?.includes(choiceId)) return;
     if (isCurrentAnswered && mode === 'practice') return; // in practice mode, locked after pick
     soundFx.playSoftPop();
 
@@ -216,6 +223,22 @@ export const PracticeSession: React.FC<PracticeSessionProps> = ({
       await repository.incrementMissionProgress(progressType, 1);
       if (missionType === 'review') await repository.incrementMissionProgress('review', 1);
     }
+  };
+
+  const handleUseHint = async () => {
+    if (mode !== 'practice' || isCurrentAnswered || currentResp?.eliminatedChoiceIds?.length || hintLock.current || hintTickets.length === 0) return;
+    const wrong = currentQ.choices.find((choice) => choice.id !== currentQ.correctChoiceId);
+    if (!wrong) return;
+    hintLock.current = true; setHintBusy(true);
+    try {
+      const ticketId = hintTickets[0];
+      if (await repository.useReward(ticketId)) {
+        setResponses((prev) => ({ ...prev, [currentQ.id]: { ...prev[currentQ.id], eliminatedChoiceIds: [wrong.id], isGuessed: true, confidence: 'low' } }));
+      }
+      const inventory = await repository.getInventory();
+      setHintTickets(inventory.filter((item) => item.itemId === 'hint-ticket' && !item.usedAt).map((item) => item.id));
+    } catch { setSaveError(true); }
+    finally { hintLock.current = false; setHintBusy(false); }
   };
 
   const handleToggleGuessed = () => {
@@ -342,7 +365,11 @@ export const PracticeSession: React.FC<PracticeSessionProps> = ({
     );
 
     // Mission progress
-    await repository.incrementMissionProgress('reading', 1);
+    if (mode === 'test') {
+      const answered = questions.filter((q) => responses[q.id]?.selectedChoiceId !== null);
+      await repository.incrementMissionProgress('reading', answered.filter((q) => q.part >= 5).length);
+      await repository.incrementMissionProgress('listening', answered.filter((q) => q.part <= 4).length);
+    }
 
     setIsFinished(true);
   };
@@ -795,6 +822,12 @@ export const PracticeSession: React.FC<PracticeSessionProps> = ({
           </div>
 
           {/* Choices */}
+          {mode === 'practice' && !isCurrentAnswered && !currentResp?.eliminatedChoiceIds?.length && (
+            <button onClick={handleUseHint} disabled={hintBusy || hintTickets.length === 0} className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-2 text-xs font-bold text-amber-900 disabled:opacity-50">
+              💡 Dùng vé gợi ý: loại 1 đáp án sai · Còn {hintTickets.length} vé
+            </button>
+          )}
+          {currentResp?.eliminatedChoiceIds?.length ? <p className="text-xs text-amber-800">Đã dùng trợ giúp. Câu này được đánh dấu cần ôn lại để em tự làm vững hơn.</p> : null}
           <div className="space-y-2.5">
             {orderedChoices.map(({ label, choice }) => {
               const isSelected = currentResp?.selectedChoiceId === choice.id;
@@ -817,8 +850,9 @@ export const PracticeSession: React.FC<PracticeSessionProps> = ({
               return (
                 <button
                   key={choice.id}
+                  disabled={hintBusy || !!currentResp?.eliminatedChoiceIds?.includes(choice.id)}
                   onClick={() => handleSelectChoice(choice.id)}
-                  className={`w-full p-4 md:p-5 rounded-2xl border-2 font-semibold text-base md:text-lg transition-all text-left flex items-start gap-3 ${btnStyle}`}
+                  className={`w-full p-4 md:p-5 rounded-2xl border-2 font-semibold text-base md:text-lg transition-all text-left flex items-start gap-3 ${btnStyle} ${currentResp?.eliminatedChoiceIds?.includes(choice.id) ? 'opacity-30 line-through' : ''}`}
                 >
                   <span className="w-6 h-6 rounded-lg bg-white border border-slate-200 flex items-center justify-center font-bold text-xs shrink-0">
                     {label}

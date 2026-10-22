@@ -1,4 +1,5 @@
 import { READING_191026_PACK } from './reading191026';
+import { EXTRA_REWARDS } from './rewardCatalog';
 import {
   DecorationCatalogItem,
   PersonalMessage,
@@ -20,6 +21,7 @@ export const DEFAULT_SETTINGS: UserSettings = {
 };
 
 export const DECORATION_CATALOG: DecorationCatalogItem[] = [
+  ...EXTRA_REWARDS,
   {
     itemId: 'sakura-tree',
     name: 'Cây Hoa Anh Đào',
