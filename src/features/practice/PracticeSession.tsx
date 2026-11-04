@@ -867,35 +867,7 @@ export const PracticeSession: React.FC<PracticeSessionProps> = ({
             })}
           </div>
 
-          {/* Guessed flag & Confidence */}
-          <div className="pt-2 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100">
-            <label className="flex items-center gap-2 cursor-pointer select-none text-xs font-bold text-amber-800 bg-amber-50 px-3 py-1.5 rounded-xl border border-amber-200 hover:bg-amber-100">
-              <input
-                type="checkbox"
-                checked={currentResp?.isGuessed || false}
-                onChange={handleToggleGuessed}
-                className="rounded text-amber-500 focus:ring-0"
-              />
-              <span>🤔 Câu này em đoán mò</span>
-            </label>
-
-            <div className="flex items-center gap-1.5 text-xs">
-              <span className="text-slate-400">Độ tự tin:</span>
-              {(['high', 'medium', 'low'] as ConfidenceLevel[]).map((c) => (
-                <button
-                  key={c}
-                  onClick={() => handleSetConfidence(c)}
-                  className={`px-2 py-0.5 rounded-lg font-bold text-[11px] ${
-                    currentResp?.confidence === c
-                      ? 'bg-slate-800 text-white'
-                      : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
-                  }`}
-                >
-                  {c === 'high' ? 'Cao' : c === 'medium' ? 'Vừa' : 'Thấp'}
-                </button>
-              ))}
-            </div>
-          </div>
+          
 
           {/* Practice mode Explanation Card */}
           {mode === 'practice' && isCurrentAnswered && (
