@@ -1,4 +1,5 @@
 import { READING_191026_PACK } from './reading191026';
+import { READING_BUOI4_PART7_PACK } from './readingBuoi4Part7';
 import { EXTRA_REWARDS } from './rewardCatalog';
 import { GRAMMAR_TOPIC_PACKS } from './grammarTopics';
 import {
@@ -591,6 +592,7 @@ export const CAT_MAIL_QUESTIONS: Question[] = [
 export const BUNDLED_PACKS = [
   ...GRAMMAR_TOPIC_PACKS,
   READING_191026_PACK,
+  READING_BUOI4_PART7_PACK,
   {
     pack: STARTER_STUDY_PACK,
     groups: STARTER_GROUPS,
